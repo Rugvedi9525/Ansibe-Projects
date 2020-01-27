@@ -1,0 +1,14 @@
+- inventory_file_path: ./home/rugvedi25/Desktop/acf19/fa19-ansible/inventory.txt
+
+- aws_region: us-east-1
+
+- ec2_web_security_group: app_web_sg
+  ec2_instance_type: t2.micro
+  ec2_ami_id: ami-9887c6e7
+  ec2_count: 1
+
+- ec2_tag_key: app
+  ec2_tag_value: web
+
+
+

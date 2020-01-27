@@ -1,0 +1,7 @@
+-
+  name: Update the web server
+  raw: "sudo yum -y update"
+-
+  name: Install http 
+  raw: "sudo yum -y install httpd"
+

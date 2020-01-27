@@ -1,0 +1,66 @@
+---
+#Playbook to provision a web server
+
+-
+  name: Provision an ec2 instance
+  hosts: localhost
+  connection: local
+  gather_facts: True
+  vars_files:
+    - 
+      variables.yaml
+  tasks:
+    - name: Create a security group
+      local_action: 
+        module: ec2_group
+        aws_access_key: '{{ access_key }}'
+        aws_secret_key: '{{ secret_key }}'
+        name: "{{ ec2_web_security_group }}"
+        description: Security Group for webserver Servers
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+        rules_egress:
+            - proto: all
+              cidr_ip: 0.0.0.0/0
+    -
+      name: Creating an ec2
+      ec2:
+        aws_access_key: '{{ access_key }}'
+        aws_secret_key: '{{ secret_key }}'
+        group: "{{ ec2_web_security_group }}"
+        key_name: '{{ my_keys }}'
+        instance_type: '{{ ec2_instance_type }}'
+        image: '{{ ec2_ami_id }}'
+        region: '{{ aws_region }}'
+        count: '{{ ec2_count }}'
+        instance_tags: '{"{{ ec2_tag_key }}":"{{ ec2_tag_value }}"}'
+        wait: true
+      register: ec2_web_output
+    - 
+      name: Test to check if instance is available
+      wait_for_connection:
+        delay: 60
+        timeout: 320
+      loop: '{{ ec2_web_output.instances }}'
+
+    -
+      name: Adding the ec2 instance to a webserver group
+      add_host:
+        name: '{{ item.public_ip }}'
+        groups: webservers
+      with_items: '{{ ec2_web_output.instances }}'
+
+- 
+  name: Configuring the web server
+  hosts: webservers
+  tasks:
+    - include: web_server_config.yaml
+
+
+
+
+

@@ -1,0 +1,33 @@
+---
+#Playbook to terminate a web server
+-
+  name: Terminate an ec2 instance
+  hosts: localhost
+  connection: local
+  vars_files:
+    - 
+      variables.yaml
+  tasks:
+    - 
+      ec2_instance_facts:
+        aws_access_key: '{{ access_key }}'
+        aws_secret_key: '{{ secret_key }}'
+        region: "{{ aws_region }}"
+        filters:
+          "tag:app": "web"
+      register: ec2_app_web
+
+
+
+    - name: Terminate the web server    
+      ec2:
+        aws_access_key: '{{ access_key }}'
+        aws_secret_key: '{{ secret_key }}'
+        region: "{{ aws_region }}"
+        state: 'absent'
+        instance_ids: "{{ item.instance_id }}"
+        with_items: "{{ ec2_app_web.instances }}"
+
+        
+
+        
